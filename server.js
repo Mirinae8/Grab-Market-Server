@@ -17,7 +17,18 @@ app.get("/products", (req, res) => {
   console.log("QUERY:", query);
 
   // 해당 테이블의 모든걸 가져오는 함수
-  models.Product.findAll()
+  models.Product.findAll({
+    // 정렬 방법 설정
+    order: [["createdAt", "DESC"]],
+    // 가져올 속성(컬럼)을 지정
+    attributes: ["id", "name", "price", "createdAt", "seller", "imageUrl"],
+    // 조건 (한번에 조회할 개수 제한)
+    // limit: 1,
+    // 전체 데이터중 조건에 맞는걸 찾으려고 할 때
+    // where :{
+
+    // }
+  })
     .then((result) => {
       console.log("PRODCUTS : ", result);
       res.send({
@@ -88,10 +99,27 @@ app.post("/products", (req, res) => {
 });
 
 // 주소에서 파라미터 가져와서 동적으로 경로 관리
-app.get("/products/:id/event/:eventId", (req, res) => {
+// "/products/:id/event/:eventId" 같은 주소도 가능
+app.get("/products/:id", (req, res) => {
   const params = req.params;
-  const { id, eventId } = params;
-  res.send(`id는 ${id}와 ${eventId} 입니다.`);
+  const { id } = params;
+  // 하나의 객체만 가져오기위해 findOne() 복수는 findAll()
+  models.Product.findOne({
+    // 조건문
+    where: {
+      id: id,
+    },
+  })
+    .then((result) => {
+      console.log("PRODUCT : ", result);
+      res.send({
+        product: result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.send("상품 조회에 에러가 발생했습니다");
+    });
 });
 
 // listen을 통해 본격적으로 서버가 실행, 두번째 인자에 콜백함수를 넣을 수 있고
