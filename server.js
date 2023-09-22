@@ -3,11 +3,31 @@ const cors = require("cors");
 const app = express();
 const port = 8080;
 const models = require("./models");
+const multer = require("multer");
+// multer 사용시 한 번 감싸줘야 함
+// 파일을 저장할 위치를 정하고 반한되는 객체를 받아옴
+// const upload = multer({ dest: "uploads/" });
+// 위와 같이 dest만 정하면 저장할때 파일명이 바뀜
+const upload = multer({
+  storage: multer.diskStorage({
+    // 어이다 저장할건지 (cb를 받아서 두번째 매개변수 디렉토리에 저장하겠다)
+    destination: function (req, file, cb) {
+      cb(null, "uploads/");
+    },
+    // 어떤 이름으로 저장할지
+    filename: function (req, file, cb) {
+      cb(null, file.originalname);
+    },
+  }),
+});
 
 // express서버에서 json 형식의 데이터를 처리할 수 있도록
 app.use(express.json());
 // 모든 브라우저에서 이 서버에 요청 가능
 app.use(cors());
+// get,포스트 등의 처리를 할 때 그 위에 express 관련 설정을 해줌
+// 서버에서 파일들을 보여줄때 다른 경로로 보여줘야함 (앞서 설정한 경로로 보여주게 만들기 위해서 하는 과정)
+app.use("/uploads", express.static("uploads"));
 
 // 람다 함수로
 // 첫번째 매개변수의 경로로 get 메소드가 호출 되었을때 두번째 매개변수인 익명함수가 실행된다
@@ -120,6 +140,16 @@ app.get("/products/:id", (req, res) => {
       console.error(error);
       res.send("상품 조회에 에러가 발생했습니다");
     });
+});
+
+// single() 은 파일 하나만 보낼 때 (매개변수는 키 명칭)
+app.post("/image", upload.single("image"), (req, res) => {
+  const file = req.file;
+  console.log(file);
+  res.send({
+    // 파일 정보중에 패스만 가져옴
+    imageUrl: file.path,
+  });
 });
 
 // listen을 통해 본격적으로 서버가 실행, 두번째 인자에 콜백함수를 넣을 수 있고
