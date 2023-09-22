@@ -57,7 +57,7 @@ app.get("/products", (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      res.send("에러 발생");
+      res.status(400).send("에러 발생");
     });
   // res.send({
   //   products: [
@@ -88,10 +88,11 @@ app.get("/products", (req, res) => {
 
 app.post("/products", (req, res) => {
   const body = req.body;
-  const { name, description, price, seller } = body;
+  const { name, description, price, seller, imageUrl } = body;
   // 허용되지 않은 Null 값이 들어가는 경우 방지 위해서 (방어코드)
-  if (!name || !description || !price || !seller) {
-    res.send("모든 필드를 입력해주세요");
+  if (!name || !description || !price || !seller || !imageUrl) {
+    // 보내는 스테이터스 코드 변경 (사용자가 잘못했다는 의미의 400번대)
+    res.status(400).send("모든 필드를 입력해주세요");
   }
   // 비동기 처리를 한다
   models.Product.create({
@@ -99,6 +100,7 @@ app.post("/products", (req, res) => {
     description,
     price,
     seller,
+    imageUrl,
   })
     .then((result) => {
       console.log("상품 생성 결과 :", result);
@@ -108,7 +110,7 @@ app.post("/products", (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      res.send("상품 업로드에 문제가 발생했습니다");
+      res.status(400).send("상품 업로드에 문제가 발생했습니다");
     });
 
   //   es6 문법에서는 키와 밸류의 이름이 같으면 하나만 적으면된다
@@ -138,7 +140,7 @@ app.get("/products/:id", (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      res.send("상품 조회에 에러가 발생했습니다");
+      res.status(400).send("상품 조회에 에러가 발생했습니다");
     });
 });
 
