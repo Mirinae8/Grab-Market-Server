@@ -29,6 +29,24 @@ app.use(cors());
 // 서버에서 파일들을 보여줄때 다른 경로로 보여줘야함 (앞서 설정한 경로로 보여주게 만들기 위해서 하는 과정)
 app.use("/uploads", express.static("uploads"));
 
+// 배너 주는 api
+app.get("/banners", (req, res) => {
+  // 서버에서 가져오기
+  models.Banner.findAll({
+    // 한 번에 조회할 개수 제한
+    limit: 2,
+  })
+    .then((result) => {
+      res.send({
+        banners: result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).send("에러가 발생했습니다.");
+    });
+});
+
 // 람다 함수로
 // 첫번째 매개변수의 경로로 get 메소드가 호출 되었을때 두번째 매개변수인 익명함수가 실행된다
 app.get("/products", (req, res) => {
@@ -41,7 +59,15 @@ app.get("/products", (req, res) => {
     // 정렬 방법 설정
     order: [["createdAt", "DESC"]],
     // 가져올 속성(컬럼)을 지정
-    attributes: ["id", "name", "price", "createdAt", "seller", "imageUrl"],
+    attributes: [
+      "id",
+      "name",
+      "price",
+      "createdAt",
+      "seller",
+      "imageUrl",
+      "soldout",
+    ],
     // 조건 (한번에 조회할 개수 제한)
     // limit: 1,
     // 전체 데이터중 조건에 맞는걸 찾으려고 할 때
@@ -152,6 +178,34 @@ app.post("/image", upload.single("image"), (req, res) => {
     // 파일 정보중에 패스만 가져옴
     imageUrl: file.path,
   });
+});
+
+// 결제하기용 api
+// 데이터에 변화를 줄 때는 보통 post 요청
+app.post("/purchase/:id", (req, res) => {
+  // destructuring
+  const { id } = req.params;
+  // 첫번째 매개변수는 뭘 업데이트 시켜줄 것이냐
+  models.Product.update(
+    {
+      soldout: 1,
+    },
+    {
+      where: {
+        // 축약 표현 id: id
+        id,
+      },
+    }
+  )
+    .then((result) => {
+      res.send({
+        result: true,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).send("에러가 발생했습니다.");
+    });
 });
 
 // listen을 통해 본격적으로 서버가 실행, 두번째 인자에 콜백함수를 넣을 수 있고
