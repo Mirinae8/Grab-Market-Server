@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const port = 8080; // flyio 배포시 해당 포트로 설정필요(?)
+const port = 8080; // flyio 배포시 해당 포트로 fly.toml 설정필요(어쩌면 dockerfile도 마찬가지?)
 const models = require("./models");
 const multer = require("multer");
 // multer 사용시 한 번 감싸줘야 함
